@@ -12,7 +12,6 @@ import base64
 import datetime as dt
 import os
 import re
-import sys
 import urllib.request
 import xml.dom.minidom
 from html import escape, unescape
@@ -108,18 +107,21 @@ def fetch():
     page = urllib.request.urlopen(req, timeout=30).read().decode()
     counts = {}
     for m in re.finditer(r'<tool-tip[^>]*\bfor="([^"]+)"[^>]*>([^<]*)</tool-tip>', page):
-        n = re.match(r"\s*(\d[\d,]*) contribution", unescape(m.group(2)))
+        text = unescape(m.group(2)).strip()
+        n = re.match(r"(\d[\d,]*) contribution", text)
+        if not n and not text.startswith("No contributions"):
+            raise SystemExit(f"unknown tooltip text: {text!r}")  # GitHub changed its HTML: keep yesterday's cards
         counts[m.group(1)] = int(n.group(1).replace(",", "")) if n else 0
     days = {}
     for td in re.finditer(r"<td\b[^>]*ContributionCalendar-day[^>]*>", page):
         tag = td.group(0)
         date, cid = re.search(r'data-date="([\d-]+)"', tag), re.search(r'\bid="([^"]+)"', tag)
         if date and cid:
-            days[dt.date.fromisoformat(date.group(1))] = counts.get(cid.group(1), 0)
+            days[dt.date.fromisoformat(date.group(1))] = counts[cid.group(1)]
     total = int(re.search(r"([\d,]+)\s+contributions?\s+in the last year", page).group(1).replace(",", ""))
     assert len(days) >= 365, f"calendar parse failed: {len(days)} days"
     if sum(days.values()) != total:
-        print(f"warning: day sum {sum(days.values())} != header total {total}", file=sys.stderr)
+        raise SystemExit(f"day sum {sum(days.values())} != header total {total}")
     return dict(sorted(days.items())), total
 
 
@@ -225,24 +227,24 @@ def activity(days, total):
     rx = W - 44
     body = f"""
 {card(W, h)}
-<text class="u" {d(.05)} x="44" y="58" font-family="{MONO}" font-size="11" letter-spacing="1.5" fill="{FG}" fill-opacity=".6">THE LAST 12 MONTHS ON GITHUB</text>
+<text class="u" {d(.05)} x="44" y="58" font-family="{MONO}" font-size="11" letter-spacing="1.5" fill="{FG}" fill-opacity=".6">THE LAST YEAR ON GITHUB</text>
 <text class="u" {d(.15)} x="40" y="112" font-family="{SERIF}" font-size="50" fill="{FG}">{total:,} <tspan font-style="italic">contributions</tspan></text>
 <g font-family="{MONO}" font-size="10" fill="{FG}" fill-opacity=".55">{''.join(bars)}</g>
 <g class="u" {d(.35)} text-anchor="end">
   <text x="{rx}" y="160" font-family="{SERIF}" font-style="italic" font-size="44" fill="{FG}">{current} {'day' if current == 1 else 'days'}</text>
   <text x="{rx}" y="184" font-family="{SANS}" font-size="13" fill="{FG}" fill-opacity=".6">current streak · longest {longest}</text>
-  <text x="{rx}" y="236" font-family="{SERIF}" font-style="italic" font-size="32" fill="{FG}">{days[best_day]} in a day</text>
-  <text x="{rx}" y="258" font-family="{SANS}" font-size="13" fill="{FG}" fill-opacity=".6">busiest day · {best_day.strftime('%b %-d, %Y')}</text>
+  {f'''<text x="{rx}" y="236" font-family="{SERIF}" font-style="italic" font-size="32" fill="{FG}">{days[best_day]} in a day</text>
+  <text x="{rx}" y="258" font-family="{SANS}" font-size="13" fill="{FG}" fill-opacity=".6">busiest day · {best_day.strftime('%b %-d, %Y')}</text>''' if days[best_day] else ""}
 </g>
 """
     write("activity.svg", svg(W, h + GAP, body, ["serif", "serif-italic", "sans", "mono"],
-                              f"{total:,} contributions in the last 12 months; current streak {current} days, longest {longest}"))
+                              f"{total:,} contributions in the last year; current streak {current} days, longest {longest}"))
 
 
 def side_cards():
     tw, th = W / 3, 236
     for pos, (name, label, big, blurb, fill, ink) in enumerate(TILES):
-        cx, cw = 7 * pos, tw - 14  # 14px gaps once the three images sit side by side
+        cx, cw = pos * 14 / 3, tw - 28 / 3  # 14px gaps once the three images sit side by side
         lines = "".join(f'<text x="{cx + 24}" y="{168 + i * 20}">{escape(l)}</text>' for i, l in enumerate(wrap(blurb, 32)))
         body = f"""
 <defs><clipPath id="k"><rect x="{cx}" width="{cw}" height="{th}" rx="16"/></clipPath>
@@ -263,7 +265,7 @@ def side_cards():
         write(f"{name}.svg", svg(tw, th + GAP, body, ["serif", "sans", "mono"], f"{label}: {big}. {blurb}"))
 
     for pos, (name, title, desc, tags) in enumerate(WORK):
-        cx, cw, ch = 7 * pos, tw - 14, 188
+        cx, cw, ch = pos * 14 / 3, tw - 28 / 3, 188
         lines = "".join(f'<text x="{cx + 24}" y="{86 + i * 20}">{escape(l)}</text>' for i, l in enumerate(wrap(desc, 33)))
         body = f"""
 <g class="u" {d(.1 + pos * .12)}>

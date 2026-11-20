@@ -14,11 +14,11 @@
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 <g class="u" style="animation-delay:0.34s">
-  <rect x="14.5" y=".5" width="278.3333333333333" height="187" rx="16" fill="#071330" stroke="rgba(236,235,230,.14)"/>
-  <circle cx="43" cy="45" r="4" fill="#ecebe6"/>
-  <text x="56" y="51" font-family="Geist,system-ui,sans-serif" font-weight="600" font-size="18" fill="#ecebe6">Wedding invitation</text>
-  <g font-family="Geist,system-ui,sans-serif" font-size="13.5" fill="#ecebe6" fill-opacity=".72"><text x="38" y="86">A digital invitation that opens</text><text x="38" y="106">on the phone with a</text><text x="38" y="126">sealed-envelope intro.</text></g>
-  <text x="38" y="162" font-family="'Geist Mono',ui-monospace,Menlo,monospace" font-size="11" fill="#ecebe6" fill-opacity=".55">Invitation · GSAP</text>
+  <rect x="9.833333333333334" y=".5" width="283.0" height="187" rx="16" fill="#071330" stroke="rgba(236,235,230,.14)"/>
+  <circle cx="38.333333333333336" cy="45" r="4" fill="#ecebe6"/>
+  <text x="51.333333333333336" y="51" font-family="Geist,system-ui,sans-serif" font-weight="600" font-size="18" fill="#ecebe6">Wedding invitation</text>
+  <g font-family="Geist,system-ui,sans-serif" font-size="13.5" fill="#ecebe6" fill-opacity=".72"><text x="33.333333333333336" y="86">A digital invitation that opens</text><text x="33.333333333333336" y="106">on the phone with a</text><text x="33.333333333333336" y="126">sealed-envelope intro.</text></g>
+  <text x="33.333333333333336" y="162" font-family="'Geist Mono',ui-monospace,Menlo,monospace" font-size="11" fill="#ecebe6" fill-opacity=".55">Invitation · GSAP</text>
   <text x="269.3333333333333" y="162" text-anchor="end" font-family="'Geist Mono',ui-monospace,Menlo,monospace" font-size="11" fill="#ecebe6">live ↗</text>
 </g>
 </svg>
