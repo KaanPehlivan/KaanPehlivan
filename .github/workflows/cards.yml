@@ -1,0 +1,28 @@
+name: Refresh profile cards
+
+on:
+  schedule:
+    - cron: "17 3 * * *"  # daily, 06:17 Türkiye
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths: ["scripts/**", "data/**", "fonts/**"]
+
+permissions:
+  contents: write
+
+jobs:
+  cards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python scripts/render.py
+      - name: Commit changed cards
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cards
+          git diff --cached --quiet || (git commit -m "chore: refresh profile cards [skip ci]" && git push)
